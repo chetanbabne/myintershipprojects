@@ -1,46 +1,35 @@
+
+# Import the modules needed
 import requests
 
-def get_exchange_rate(base_currency, target_currency):
-    try:
-        url = f"https://api.exchangeratesapi.io/latest?base={base_currency}&symbols={target_currency}"
-        response = requests.get(url)
-        data = response.json()
+class Currency_convertor:
+	# empty dict to store the conversion rates
+	rates = {} 
+	def __init__(self, url):
+		data = requests.get(url).json()
 
-        if "error" in data:
-            print("Error:", data["error"])
-            return None
+		# Extracting only the rates from the json data
+		self.rates = data["rates"] 
 
-        if target_currency in data["rates"]:
-            exchange_rate = data["rates"][target_currency]
-            return exchange_rate
-        else:
-            return None
-    except requests.exceptions.RequestException:
-        print("Error: Failed to fetch exchange rate data. Please check your internet connection.")
-        return None
+	# function to do a simple cross multiplication between 
+	# the amount and the conversion rates
+	def convert(self, from_currency, to_currency, amount):
+		initial_amount = amount
+		if from_currency != 'EUR' :
+			amount = amount / self.rates[from_currency]
 
-def main():
-    print("Welcome to the Currency Converter!")
+		# limiting the precision to 2 decimal places
+		amount = round(amount * self.rates[to_currency], 2)
+		print('{} {} = {} {}'.format(initial_amount, from_currency, amount, to_currency))
 
-    while True:
-        try:
-            base_currency = input("Enter the source currency (e.g., USD, EUR): ").upper()
-            amount = float(input(f"Enter the amount in {base_currency}: "))
-            target_currency = input("Enter the target currency (e.g., USD, EUR): ").upper()
-
-            exchange_rate = get_exchange_rate(base_currency, target_currency)
-
-            if exchange_rate is not None:
-                converted_amount = amount * exchange_rate
-                print(f"{amount} {base_currency} is equal to {converted_amount:.2f} {target_currency} (Exchange Rate: 1 {base_currency} = {exchange_rate} {target_currency}).")
-            else:
-                print("Unsupported currency or invalid conversion.")
-
-            another_conversion = input("Do you want to perform another conversion? (yes/no): ").lower()
-            if another_conversion != 'yes':
-                break
-        except ValueError:
-            print("Invalid input. Please enter a numeric value for the amount.")
-
+# Driver code
 if __name__ == "__main__":
-    main()
+
+	# YOUR_ACCESS_KEY = 'GET YOUR ACCESS KEY FROM fixer.io'
+	url = str.__add__('http://data.fixer.io/api/latest?access_key=', YOUR_ACCESS_KEY) 
+	c = Currency_convertor(url)
+	from_country = input("From Country: ")
+	to_country = input("TO Country: ")
+	amount = int(input("Amount: "))
+
+	c.convert(from_country, to_country, amount)
